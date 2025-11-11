@@ -1,0 +1,82 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "aws-ecr-credential.job" . }}
+  namespace: {{ include "aws-ecr-credential.namespace" . }}
+  labels:
+{{ include "aws-ecr-credential.labels" . | indent 4 }}
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      labels:
+{{ include "aws-ecr-credential.podLabels" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ include "aws-ecr-credential.serviceAccount" . }}
+      terminationGracePeriodSeconds: 0
+      restartPolicy: Never
+      containers:
+      - name: kubectl
+        imagePullPolicy: IfNotPresent
+        image: {{ .Values.jobImage }}:{{ .Values.jobImageTag }}
+        env:
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "aws-ecr-credential.secret" . }}
+                key: AWS_ACCESS_KEY_ID
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "aws-ecr-credential.secret" . }}
+                key: AWS_SECRET_ACCESS_KEY
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          AWS_ACCOUNT={{ .Values.aws.account }}
+          AWS_REGION={{ .Values.aws.region }}
+          echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:0:8}..."
+          echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:0:8}..."
+          echo "AWS_ACCOUNT=$AWS_ACCOUNT"
+          echo "AWS_REGION=$AWS_REGION"
+          
+          # Validate AWS credentials
+          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+            echo "ERROR: AWS credentials are not set"
+            exit 1
+          fi
+          
+          DOCKER_REGISTRY_SERVER=${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+          DOCKER_USER=AWS
+          
+          echo "Getting ECR login token..."
+          DOCKER_PASSWORD=`aws ecr get-login-password --region ${AWS_REGION}`
+          if [ $? -ne 0 ] || [ -z "$DOCKER_PASSWORD" ]; then
+            echo "ERROR: Failed to get ECR login password"
+            exit 1
+          fi
+
+          echo "DOCKER_REGISTRY_SERVER=$DOCKER_REGISTRY_SERVER"
+          echo "DOCKER_USER=$DOCKER_USER"
+          echo "DOCKER_PASSWORD=${DOCKER_PASSWORD:0:20}..."
+
+          echo "Creating docker-registry secret..."
+          kubectl delete secret --namespace {{ .Values.targetNamespace }} aws-registry || true
+          kubectl create secret --namespace {{ .Values.targetNamespace }} docker-registry aws-registry \
+          --docker-server=$DOCKER_REGISTRY_SERVER \
+          --docker-username=$DOCKER_USER \
+          --docker-password=$DOCKER_PASSWORD \
+          --docker-email=no@email.local
+
+          if [ $? -eq 0 ]; then
+            echo "SUCCESS: aws-registry secret created successfully"
+          else
+            echo "ERROR: Failed to create aws-registry secret"
+            exit 1
+          fi
+
+          echo "Patching default service account..."
+          kubectl patch serviceaccount default --namespace {{ .Values.targetNamespace }} -p '{"imagePullSecrets":[{"name":"aws-registry"}]}'
+          
+          echo "ECR credential setup completed successfully!"

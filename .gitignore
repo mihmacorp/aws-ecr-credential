@@ -1,0 +1,21 @@
+# Helm chart packages
+*.tgz
+
+# Temporary files
+*.tmp
+*.swp
+*.bak
+*~
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test and development files
+values-dev.yaml
+values-local.yaml

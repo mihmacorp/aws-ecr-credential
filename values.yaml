@@ -1,0 +1,33 @@
+# Target namespace where the aws-registry secret will be created and maintained.
+# This secret will be used to pull images from your AWS ECR.
+targetNamespace: default
+
+# AWS Configuration
+# Configure your AWS account details and credentials for accessing ECR
+aws:
+  # AWS account number (12 digits) - must be a string
+  # Example: "123456789012"
+  account: ""
+  
+  # AWS region where your ECR repository is located
+  # Example: "us-east-1", "eu-west-1", "ap-southeast-1"
+  region: "us-east-1"
+  
+  # Base64-encoded AWS Access Key ID
+  # The IAM user should have at minimum the following permissions:
+  # - ecr:GetAuthorizationToken
+  # - ecr:BatchCheckLayerAvailability
+  # - ecr:GetDownloadUrlForLayer
+  # - ecr:BatchGetImage
+  # Encode using: echo -n 'YOUR_ACCESS_KEY_ID' | base64
+  accessKeyId: ""
+  
+  # Base64-encoded AWS Secret Access Key
+  # Encode using: echo -n 'YOUR_SECRET_ACCESS_KEY' | base64
+  secretAccessKey: ""
+
+# Container image used for the credential refresh job
+# This image includes AWS CLI v2 and kubectl
+jobImage: mihmacorp/aws-kubectl
+jobImageTag: 1.1
+

@@ -1,0 +1,48 @@
+apiVersion: v2
+name: aws-ecr-credential
+version: 2.0.0
+appVersion: "2.0.0"
+description: Seamlessly integrate Kubernetes with AWS ECR using AWS CLI v2. Automatically manages docker-registry secrets for pulling images from Amazon ECR.
+type: application
+keywords:
+  - aws
+  - ecr
+  - imagePullSecrets
+  - kubernetes
+  - docker-registry
+  - amazon
+home: https://github.com/mihmacorp/aws-ecr-credential
+sources:
+  - https://github.com/mihmacorp/aws-ecr-credential
+  - https://github.com/architectminds/helm-charts/tree/master/charts/aws-ecr-credential
+maintainers:
+  - name: Mihma Inc
+    email: business@mihma.com
+icon: https://raw.githubusercontent.com/aws/aws-icons-for-plantuml/main/dist/Containers/ECR.png
+annotations:
+  artifacthub.io/changes: |
+    - kind: changed
+      description: Updated to use AWS CLI v2 instead of v1
+    - kind: changed
+      description: Updated base image to amazon/aws-cli:2.31.32
+    - kind: added
+      description: Enhanced error handling and validation
+  artifacthub.io/license: MIT
+  artifacthub.io/prerelease: "false"
+  artifacthub.io/recommendations: |
+    - url: https://artifacthub.io/packages/helm/aws/aws-load-balancer-controller
+  artifacthub.io/links: |
+    - name: Original Chart
+      url: https://github.com/architectminds/helm-charts
+  artifacthub.io/maintainers: |
+    - name: Mihma Inc
+      email: business@mihma.com
+  artifacthub.io/operator: "false"
+  artifacthub.io/signKey: ""
+  artifacthub.io/crds: ""
+  artifacthub.io/crdsExamples: ""
+  artifacthub.io/containsSecurityUpdates: "false"
+  artifacthub.io/images: |
+    - name: aws-kubectl
+      image: mihmacorp/aws-kubectl:1.1
+      whitelisted: true
