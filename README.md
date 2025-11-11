@@ -1,5 +1,7 @@
 # aws-ecr-credential
 
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/mihmacorp)](https://artifacthub.io/packages/search?repo=mihmacorp)
+
 This Chart seamlessly integrates Kubernetes with AWS ECR using **AWS CLI v2**.
 
 Simply deploy this chart to your kubernetes cluster and you will be able to pull and run images from your AWS ECR (Elastic Container Registry) in your cluster.
